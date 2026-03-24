@@ -154,10 +154,7 @@ module issue_read_operands
   rs3_len_t operand_c_fpr;
   // output flipflop (ID <-> EX)
   fu_data_t [CVA6Cfg.NrIssuePorts-1:0] fu_data_n, fu_data_q;
-  logic               [        CVA6Cfg.VLEN-1:0]                   pc_n;
-  logic                                                            is_compressed_instr_n;
-  branchpredict_sbe_t                                              branch_predict_n;
-  logic               [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] imm_forward_rs3;
+  logic [CVA6Cfg.NrIssuePorts-1:0][CVA6Cfg.XLEN-1:0] imm_forward_rs3;
 
   logic [CVA6Cfg.NrIssuePorts-1:0] alu_valid_n, alu_valid_q;
   logic [CVA6Cfg.NrIssuePorts-1:0] aes_valid_n, aes_valid_q;
@@ -229,7 +226,7 @@ module issue_read_operands
 
   // CVXIF Signals
   logic cvxif_req_allowed;
-  logic x_transaction_rejected, x_transaction_rejected_n;
+  logic x_transaction_rejected;
   logic [OPERANDS_PER_INSTR-1:0] rs_valid;
   logic [OPERANDS_PER_INSTR-1:0][CVA6Cfg.XLEN-1:0] rs;
 
@@ -1037,28 +1034,6 @@ module issue_read_operands
   // ----------------------
   // Registers (ID <-> EX)
   // ----------------------
-
-  always_comb begin
-    pc_n = '0;
-    is_compressed_instr_n = 1'b0;
-    branch_predict_n = {cf_t'(0), {CVA6Cfg.VLEN{1'b0}}};
-    if (CVA6Cfg.SuperscalarEn) begin
-      if (issue_instr_i[1].fu == CTRL_FLOW) begin
-        pc_n                  = issue_instr_i[1].pc;
-        is_compressed_instr_n = issue_instr_i[1].is_compressed;
-        branch_predict_n      = issue_instr_i[1].bp;
-      end
-    end
-    if (issue_instr_i[0].fu == CTRL_FLOW) begin
-      pc_n                  = issue_instr_i[0].pc;
-      is_compressed_instr_n = issue_instr_i[0].is_compressed;
-      branch_predict_n      = issue_instr_i[0].bp;
-    end
-    x_transaction_rejected_n = 1'b0;
-    if (issue_instr_i[0].fu == CVXIF) begin
-      x_transaction_rejected_n = x_transaction_rejected;
-    end
-  end
 
   assign alu_bypass_n = &issue_ack_o ? alu_bypass : '0;
 
